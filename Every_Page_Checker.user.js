@@ -13,8 +13,7 @@
 // ==/UserScript==
 
 
-window.addEventListener('DOMContentLoaded', function(){ // CSSデザインを適用するためのスクリプト
-
+window.addEventListener('DOMContentLoaded', function(){ // CSSデザインを適用
     let style=
         '<style>'+
         '.include-ex-linkBtn, .save-browserPush, .save-hashtag-module, .adcrossBanner,'+
@@ -34,9 +33,9 @@ window.addEventListener('DOMContentLoaded', function(){ // CSSデザインを適
 
 
 
-window.addEventListener('load', function(){ // このスクリプトは孫ウインドウだけで働く
+window.addEventListener('load', function(){ // 孫ウインドウで働く
     let body_id=document.body.getAttribute('id');
-    if(body_id=="entryCreate"){ // この項だけ孫ウインドウで働く
+    if(body_id=="entryCreate"){ // 孫ウインドウ
 
         select_e(close_w);
 
@@ -45,24 +44,24 @@ window.addEventListener('load', function(){ // このスクリプトは孫ウイ
             if(error_report==null){
                 if(window.opener){
                     report('gray');
-                    window.opener.close(); }} // エラー無い場合 grayを送信　親ウインドウを閉じる
+                    window.opener.close(); }} // エラー無い場合 grayを送信　子ウインドウを閉じる
             else{
                 if(window.opener){
                     report('red');
                     window.opener.location.reload();
-                }} // エラー報告のある場合は redを送信　親ウインドウを残す
+                }} // エラー報告のある場合は redを送信　子ウインドウを残す
             close_w(); }
 
         function close_w(){
             let close_button=document.querySelector('.entryComplete__close');
-            close_button.click(); } // 子ウインドウは常に閉じる
+            close_button.click(); } // 孫ウインドウは常に閉じる
 
         function report(color){
             window.opener.document.querySelector('html').style.color=color; }}});
 
 
 
-window.addEventListener('load', function(){ // このスクリプトは親ウインドウで働くメインスクリプト
+window.addEventListener('load', function(){ // 親ウインドウで働くメインスクリプト
     let type=0; // 動作タイプ
 
     let entry_target=document.querySelectorAll('.entry-item .entry');
@@ -71,7 +70,6 @@ window.addEventListener('load', function(){ // このスクリプトは親ウイ
     let list_bar=document.querySelectorAll('#entryList .entry-item');
     let new_win=Array(entry_target.length);
     let link_target=Array(entry_target.length);
-    //    let result_f=Array(entry_target.length);
 
 
     let body_id=document.body.getAttribute('id');
@@ -133,7 +131,7 @@ window.addEventListener('load', function(){ // このスクリプトは親ウイ
             let slow_open=setInterval( function(){
                 open_win(k);
                 k +=1;
-                if(k>=entry_target.length){ clearInterval(slow_open); }}, 2400); }} // 2.4secの間隔で自動実行 ⭕
+                if(k>=entry_target.length){ clearInterval(slow_open); }}, 2400); }} // 2.4sec 間隔で自動実行 ⭕
 
 
     function open_win(k){
@@ -145,7 +143,7 @@ window.addEventListener('load', function(){ // このスクリプトは親ウイ
 
         new_win[k].addEventListener('load', function(){
             setTimeout( function(){
-                edit_target(publish_f[k].value, k); }, 500); });} // 子ウインドウで書込み開始
+                edit_target(publish_f[k].value, k); }, 500); });} // 子ウインドウでチェック開始
 
 
     function edit_target(val,k){
@@ -166,9 +164,9 @@ window.addEventListener('load', function(){ // このスクリプトは親ウイ
                 else{
                     if(type==0){
                         list_bar[k].style.boxShadow='none';
-                        new_win[k].close(); }// ウインドウを閉じる
+                        new_win[k].close(); } // ウインドウを閉じる
                     else{ ; }
-                    list_bar[k].style.backgroundColor='#eceff1'; } // タグが無い場合 背景 淡グレー
+                    list_bar[k].style.backgroundColor='#eceff1'; } // タグが無い場合　背景 淡グレー
             }}
 
         if(editor_flg.value=='1'){ // タグ編集エディタの文書の場合
@@ -184,9 +182,9 @@ window.addEventListener('load', function(){ // このスクリプトは親ウイ
             else{
                 if(type==0){
                     list_bar[k].style.boxShadow='none';
-                    new_win[k].close(); }// ウインドウを閉じる
+                    new_win[k].close(); } // ウインドウを閉じる
                 else{ ; }
-                list_bar[k].style.backgroundColor='#eceff1'; }} // タグが無い場合 背景 淡グレー
+                list_bar[k].style.backgroundColor='#eceff1'; }} // タグが無い場合　背景 淡グレー
 
     } // edit_target()
 
