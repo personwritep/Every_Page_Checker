@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name        Every Page Checker 🔲
+// @name        Every Page Checker
 // @namespace        http://tampermonkey.net/
 // @version        2.0
 // @description        「記事の編集・削除」ページで「常設 styleタグ」をチェックする
@@ -8,6 +8,8 @@
 // @match        https://blog.ameba.jp/ucs/entry/srventryupdate*
 // @run-at        document-start
 // @grant        none
+// @updateURL        https://github.com/personwritep/Every_Page_Checker/raw/main/Every_Page_Checker.user.js
+// @downloadURL        https://github.com/personwritep/Every_Page_Checker/raw/main/Every_Page_Checker.user.js
 // ==/UserScript==
 
 
