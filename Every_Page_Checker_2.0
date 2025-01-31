@@ -13,8 +13,7 @@
 // ==/UserScript==
 
 
-window.addEventListener('DOMContentLoaded', function(){ // CSSデザインを適用するためのスクリプト
-
+window.addEventListener('DOMContentLoaded', function(){ // CSSデザインを適用する
     let style=
         '<style>'+
         '.include-ex-linkBtn, .save-browserPush, .save-hashtag-module, .adcrossBanner,'+
@@ -34,7 +33,7 @@ window.addEventListener('DOMContentLoaded', function(){ // CSSデザインを適
 
 
 
-window.addEventListener('load', function(){ // このスクリプトは孫ウインドウだけで働く
+window.addEventListener('load', function(){ // 孫ウインドウで働く
     let body_id=document.body.getAttribute('id');
     if(body_id=="entryCreate"){ // この項だけ孫ウインドウで働く
 
@@ -45,12 +44,12 @@ window.addEventListener('load', function(){ // このスクリプトは孫ウイ
             if(error_report==null){
                 if(window.opener){
                     report('gray');
-                    window.opener.close(); }} // エラー無い場合 grayを送信　親ウインドウを閉じる
+                    window.opener.close(); }} // エラー無い場合 grayを送信　子ウインドウを閉じる
             else{
                 if(window.opener){
                     report('red');
                     window.opener.location.reload();
-                }} // エラー報告のある場合は redを送信　親ウインドウを残す
+                }} // エラー報告のある場合は redを送信　子ウインドウを残す
             close_w(); }
 
         function close_w(){
@@ -62,7 +61,7 @@ window.addEventListener('load', function(){ // このスクリプトは孫ウイ
 
 
 
-window.addEventListener('load', function(){ // このスクリプトは親ウインドウで働くメインスクリプト
+window.addEventListener('load', function(){ // 親ウインドウで働くメインスクリプト
     let type=0; // 動作タイプ
 
     let entry_target=document.querySelectorAll('.entry-item .entry');
@@ -166,7 +165,7 @@ window.addEventListener('load', function(){ // このスクリプトは親ウイ
                 else{
                     if(type==0){
                         list_bar[k].style.boxShadow='none';
-                        new_win[k].close(); }// ウインドウを閉じる
+                        new_win[k].close(); } // ウインドウを閉じる
                     else{ ; }
                     list_bar[k].style.backgroundColor='#eceff1'; } // タグが無い場合 背景 淡グレー
             }}
@@ -184,7 +183,7 @@ window.addEventListener('load', function(){ // このスクリプトは親ウイ
             else{
                 if(type==0){
                     list_bar[k].style.boxShadow='none';
-                    new_win[k].close(); }// ウインドウを閉じる
+                    new_win[k].close(); } // ウインドウを閉じる
                 else{ ; }
                 list_bar[k].style.backgroundColor='#eceff1'; }} // タグが無い場合 背景 淡グレー
 
