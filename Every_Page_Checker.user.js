@@ -16,10 +16,8 @@
 window.addEventListener('DOMContentLoaded', function(){ // CSSデザインを適用
     let style=
         '<style>'+
-        '.include-ex-linkBtn, .save-browserPush, .save-hashtag-module, .adcrossBanner,'+
-        '#globalHeader, #ucsHeader, #ucsMainLeft h1, .l-ucs-sidemenu-area, #ucsMainRight, '+
-        '#ucsContent::before, #footerAd, #globalFooter, .selection-bar '+
-        '{ display: none !important; } '+
+        '#globalHeader, #ucsHeader, #ucsMainLeft h1, .l-ucs-sidemenu-area, .selection-bar { '+
+        'display: none !important; } '+
 
         '#ucsContent { width: 930px !important; } '+
         '#ucsMainLeft { width: 930px !important; padding: 0 15px !important; } '+
