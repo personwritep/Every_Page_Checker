@@ -1,0 +1,234 @@
+// ==UserScript==
+// @name         Every Page Checker
+// @namespace  http://tampermonkey.net/
+// @version       1.1
+// @description  「記事の編集・削除」ページで「常設 styleタグ」をチェックする
+// @author        Ameba Blog User
+// @match        https://blog.ameba.jp/ucs/entry/srventrylist*
+// @match        https://blog.ameba.jp/ucs/entry/srventryupdate*
+// @run-at        document-start
+// @grant         none
+// ==/UserScript==
+
+
+window.addEventListener('DOMContentLoaded', function(){ // CSSデザインを適用するためのスクリプト
+
+    let style=
+        '<style>'+
+        '.include-ex-linkBtn, .save-browserPush, .save-hashtag-module, .adcrossBanner { '+
+        'display: none !important; } '+
+        '#globalHeader, #ucsHeader, #ucsMainLeft h1, .l-ucs-sidemenu-area, #ucsMainRight, '+
+        '.actionControl, .list_icon, #footerAd, #globalFooter, .checkboxAllControl, '+
+        '.selection-bar { display: none !important; } '+
+
+        '#ucsContent { width: 840px !important; background: #fff; '+
+        'box-shadow: 0 0 0 100vh #c5d8e1; border-radius: 0; } '+
+        '#ucsContent::before { content: unset; } '+
+        '#ucsMain { margin-top: 15px; padding: 0 !important; background: #fff; '+
+        'border-radius: 0; } '+
+        '#ucsMainLeft { width: 838px !important; padding: 0 15px; float: none; } '+
+
+        '#entryList li { padding: 4px 5px 0 !important; height: 32px; } '+
+        '#entryList li:hover { background-color: #e2eef0; } '+
+        '#entryList li .entry-column { padding-left: 16px !important; } '+
+        '#entryList .leftCol { justify-content: center; } '+
+        '#entryList .leftCol h2 a { text-decoration: none !important; } '+
+        '#entryList .leftCol dl { display: none !important; } '+
+        '#entryList .leftCol, #entryList .titleCol h2 { width: 353px !important; } '+
+        '#entryList .leftCol a:hover { text-decoration: none; } '+
+        '#entryList .leftCol a:visited { color: #3970b5; } '+
+
+        '#entryList .txtCol { white-space: nowrap; font-size: 13px; margin-bottom: 2px; '+
+        'line-height: 16px; } '+
+        '#entryList .rightCol { display: flex; width: 410px !important; padding: 8px 0; '+
+        'flex-direction: row; margin-top: -2px; margin-left: 0; } '+
+        '#entryList .status-text { width: 64px; margin-bottom: -4px; padding: 2px 4px 0; '+
+        'font-weight: normal; color: #000; } '+
+        '#entryList ul input[value="1"] + input + li .txtCol span:first-child { '+
+        'display: inline-block; text-indent: 12px; color: #fff; background: #2196f3 !important; } '+
+        '#entryList ul input[value="2"] + input + li .txtCol span:first-child { display: inline-block; '+
+        'text-indent: 2px; overflow: hidden; color: #fff; background: #009688 !important; } '+
+
+        '#entryList .txtCol .date { display: inline-block; padding: 2px 4px 0; font-size: 13px; '+
+        'color: #000; } '+
+        '#entryList .deleteCol { margin: 0 !important; } '+
+        '#entryList .deleteCol .process+.process, #entryList dd+dd { margin-left: 10px; } '+
+        '#entryList .deleteCol a { padding: 2px 5px 0; font-size: 14px; '+
+        'text-decoration: none !important; border: 1px solid #aaa; border-radius: 4px; '+
+        'background: linear-gradient(0deg, #eee, #fff); overflow: hidden; } '+
+        '#entryList .deleteCol a:hover { outline: auto #1976d2; } '+
+        '#entryList .deleteCol .process svg { width: 16px; height: 16px; } '+
+
+        '#sorting{ margin: 0 0 4px; padding: 4px 10px; height: 24px; } '+
+        '#sorting ul { padding-top: 3px; } '+
+        '#sorting >span { font-size: 15px; line-height: 15px; font-weight: bold; '+
+        'display: inline-block; margin-left: 50px; padding: 3px 6px 0; '+
+        'border: 1px solid #aaa; border-radius: 4px; background: #fff; cursor: pointer; } '+
+        '.pagingArea .active { border: 2px solid #0066cc; }'+
+        '</style>';
+
+    document.head.insertAdjacentHTML('beforeend', style);
+
+})
+
+
+
+window.addEventListener('load', function(){ // このスクリプトは孫ウインドウだけで働く
+    let body_id=document.body.getAttribute('id');
+    if(body_id=="entryCreate"){ // この項だけ孫ウインドウで働く
+
+        select_e(close_w);
+
+        function select_e(close_w){
+            let error_report=document.querySelector('h1.p-error__head');
+            if(error_report==null){
+                if(window.opener){
+                    report('gray');
+                    window.opener.close(); }} // エラー無い場合 grayを送信　親ウインドウを閉じる
+            else{
+                if(window.opener){
+                    report('red');
+                    window.opener.location.reload();
+                }} // エラー報告のある場合は redを送信　親ウインドウを残す
+            close_w(); }
+
+        function close_w(){
+            let close_button=document.querySelector('.entryComplete__close');
+            close_button.click(); } // 子ウインドウは常に閉じる
+
+        function report(color){
+            window.opener.document.querySelector('html').style.color=color; }}})
+
+
+
+window.addEventListener('load', function(){ // このスクリプトは親ウインドウで働くメインスクリプト
+    var entry_target;
+    var publish_f;
+    var list_bar;
+    var new_win;
+    var link_target;
+    var result_f;
+
+    entry_target=document.querySelectorAll('.deleteCol');
+    publish_f=document.querySelectorAll('input[name="publish_flg"]');
+    list_bar=document.querySelectorAll('#entryList li');
+
+    let body_id=document.body.getAttribute('id');
+    if(body_id=='entryListEdit'){
+        let start_button=
+            '<p id="start_ep">Start Processing'+
+            '<style>'+
+            '#sorting { position: relative; } '+
+            '#start_ep { position: absolute; top: 4px; right: 15px; font: bold 14px Meiryo; '+
+            'width: auto; padding: 1px 15px 0; border: 1px solid #aaa; border-radius: 4px; '+
+            'background: #fff; cursor: pointer; }'+
+            '</style></p>';
+
+        let sorting=document.querySelector('#sorting');
+        if(sorting){
+            sorting.insertAdjacentHTML('beforeend', start_button); }
+
+        let start_ep=document.querySelector('#start_ep');
+        if(start_ep){
+            start_ep.onclick=function(){ start_select(); };
+
+            function start_select(){
+                sorting.removeChild(start_ep);
+                if(entry_target.length==0 || entry_target==null){ // 編集対象がリストに無い場合
+                    alert('編集対象の記事がありません'); }
+                if(entry_target.length >0){ // 編集対象がリストに有る場合
+                    let ok=confirm('このページの検査対象記事：' + entry_target.length + '\n ⛔タグチェックを実行しますか？');
+                    if(ok){ open_all(); }}}
+        }}
+
+
+    function open_all(){
+        entry_target=document.querySelectorAll('.deleteCol');
+        publish_f=document.querySelectorAll('input[name="publish_flg"]');
+        new_win=Array(entry_target.length);
+        link_target=Array(entry_target.length);
+        result_f=Array(entry_target.length);
+
+        open_win(0);
+        if(entry_target.length>1){
+            let k=1;
+            let slow_open=setInterval( function(){
+                open_win(k);
+                k +=1;
+                if(k>=entry_target.length){ clearInterval(slow_open); }}, 2400); }} // 2.4secの間隔で自動実行 ⭕
+
+
+    function open_win(k){
+        result_f[k]=0;
+        entry_target=document.querySelectorAll('.deleteCol');
+        publish_f=document.querySelectorAll('input[name="publish_flg"]');
+
+        link_target[k]=entry_target[k].getElementsByTagName('a')[0].getAttribute('href');
+        let top_p=100 + 30*k;
+        new_win[k]=window.open(link_target[k], k, 'top=' + top_p + ', left=100, width=600, height=180');
+
+        result_f[k]=1; // 読込み開始
+        list_bar[k].style.boxShadow='inset 0 0 0 2px #03a9f4'; // リスト欄に青枠表示
+
+        new_win[k].addEventListener('load', function(){
+            setTimeout( function(){
+                edit_target(publish_f[k].value, k); }, 500); });} // 子ウインドウで書込み開始
+
+
+    function edit_target(val,k){
+        let editor_flg=new_win[k].document.querySelector('input[name="editor_flg"]');
+
+        if(editor_flg.value=='5'){ // 最新版エディタの文書の場合
+            let editor_iframe=new_win[k].document.querySelector('.cke_wysiwyg_frame');
+            let iframe_doc=editor_iframe.contentWindow.document;
+            if(iframe_doc){
+                let iframe_body=iframe_doc.querySelector('body.cke_editable');
+                let style_tag=iframe_doc.querySelector('style.asa');
+
+                if(style_tag){ ; } // 送信せずウインドウを残す
+                else{
+                    new_win[k].close();
+                    result_f[k]=2; // 無処理
+                    list_bar[k].style.boxShadow='none';
+                    list_bar[k].style.backgroundColor='#eceff1'; }}} // 検査OKなら子ウインドウを閉じ 背景 淡グレー
+
+        if(editor_flg.value=='1'){ // タグ編集エディタの文書の場合
+            let preview=new_win[k].document.getElementById('js-light-preview');
+            let tageditor_text=new_win[k].document.getElementById('entryTextArea');
+            let style_tag=preview.querySelector('style.asa');
+
+            if(style_tag){ ; } // 送信せずウインドウを残す
+            else{
+                result_f[k]=2; // 無処理
+                list_bar[k].style.boxShadow='none';
+                list_bar[k].style.backgroundColor='#eceff1';
+                new_win[k].close(); }} // 検査OKなら子ウインドウを閉じ 背景 淡グレー
+
+        function twice(end_do,k){
+            setTimeout( function(){
+                publish_do(val,k); }, 500);
+            end_do(k); }
+
+        function end_do(k){ // 送信操作の進行中
+            result_f[k]=3; // 送信処理
+            new_win[k].addEventListener('beforeunload', flag_line , false); }
+
+        function flag_line(){
+            let send_color=new_win[k].document.querySelector('html').style.color;
+            if(send_color=='gray'){ // 正常終了の報告
+                result_f[k]=4; // 正常終了の報告
+                list_bar[k].style.boxShadow='none';
+                list_bar[k].style.backgroundColor='#a4d5fd'; } // 孫ウインドウが編集ウインドウが閉じたら 背景 淡ブルー
+            if(send_color=='red'){
+                result_f[k]=5; // エラー終了の報告
+                list_bar[k].style.boxShadow='inset 0 0 0 2px red';
+                list_bar[k].style.backgroundColor='#fff'; }} // 孫ウインドウのエラー報告の場合は閉じず　背景 白 赤枠
+
+        function publish_do(val,k){
+            let publish_b0=new_win[k].document.querySelector('button.js-submitButton[publishflg="0"]');
+            let publish_b1=new_win[k].document.querySelector('button.js-submitButton[publishflg="1"]');
+            if(val==0){ publish_b0.click(); }
+            if(val==1){ publish_b1.click(); }
+            if(val==2){ publish_b0.click(); }}}
+
+})
